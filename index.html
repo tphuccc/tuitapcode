@@ -383,6 +383,7 @@ Number: 723/BNG-LS</textarea>
 (function(){
   const root = document.documentElement;
   const fontLabel = document.getElementById('fontSizeLabel');
+  const sidebarLeft = document.getElementById('sidebarLeft');
 
   // Auto-grow textareas to fit their content
   function autoGrow(ta){
@@ -416,31 +417,23 @@ Number: 723/BNG-LS</textarea>
     fontSize = 17; applyFontSize();
   });
 
-  // Collapsible left sidebar
-  const sidebarLeft = document.getElementById('sidebarLeft');
-  const sidebarToggle = document.getElementById('sidebarToggle');
-  const railToggle = document.getElementById('railToggle');
-
-  function setSidebarCollapsed(collapsed){
-    sidebarLeft.classList.toggle('collapsed', collapsed);
-    railToggle.classList.toggle('show', collapsed);
-    localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
-  }
-  setSidebarCollapsed(localStorage.getItem('sidebarCollapsed') === '1');
-  sidebarToggle.addEventListener('click', ()=> setSidebarCollapsed(true));
-  railToggle.addEventListener('click', ()=> setSidebarCollapsed(false));
-
   // Drag-to-resize sidebars
   function makeResizable(handle, panel, opts){
     const { min, max, storageKey, invert } = opts;
-    const saved = localStorage.getItem(storageKey);
-    if(saved) setWidth(parseInt(saved, 10));
 
     function setWidth(px){
       px = Math.max(min, Math.min(max, px));
       panel.style.width = px + 'px';
       panel.style.flexBasis = px + 'px';
       return px;
+    }
+    function clearWidth(){
+      panel.style.width = '';
+      panel.style.flexBasis = '';
+    }
+    function applyStoredWidth(){
+      const saved = localStorage.getItem(storageKey);
+      if(saved) setWidth(parseInt(saved, 10));
     }
 
     handle.addEventListener('mousedown', (e)=>{
@@ -468,14 +461,35 @@ Number: 723/BNG-LS</textarea>
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     });
+
+    return { setWidth, clearWidth, applyStoredWidth };
   }
 
-  makeResizable(document.getElementById('resizerLeft'), sidebarLeft, {
+  const leftResize = makeResizable(document.getElementById('resizerLeft'), sidebarLeft, {
     min: 180, max: 460, storageKey: 'sidebarLeftWidth', invert: false
   });
-  makeResizable(document.getElementById('resizerRight'), document.getElementById('sidebarRight'), {
+  const rightResize = makeResizable(document.getElementById('resizerRight'), document.getElementById('sidebarRight'), {
     min: 240, max: 640, storageKey: 'sidebarRightWidth', invert: true
   });
+
+  // Collapsible left sidebar
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const railToggle = document.getElementById('railToggle');
+
+  function setSidebarCollapsed(collapsed){
+    sidebarLeft.classList.toggle('collapsed', collapsed);
+    railToggle.classList.toggle('show', collapsed);
+    localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+    if(collapsed){
+      leftResize.clearWidth();
+    } else {
+      leftResize.applyStoredWidth();
+    }
+  }
+  setSidebarCollapsed(localStorage.getItem('sidebarCollapsed') === '1');
+  rightResize.applyStoredWidth();
+  sidebarToggle.addEventListener('click', ()=> setSidebarCollapsed(true));
+  railToggle.addEventListener('click', ()=> setSidebarCollapsed(false));
 
   // Nav item switching (visual only)
   document.getElementById('navList').addEventListener('click', (e)=>{
