@@ -32,7 +32,35 @@
     border-right:1px solid var(--border);
     display:flex; flex-direction:column;
     padding:20px 16px;
+    position:relative;
+    transition:width .18s ease, flex-basis .18s ease, padding .18s ease;
+    overflow:hidden;
   }
+  .sidebar-left.collapsed{
+    width:0; flex:0 0 0; padding-left:0; padding-right:0; border-right:none;
+  }
+  .sidebar-left.collapsed .sidebar-inner{opacity:0; pointer-events:none;}
+  .sidebar-inner{
+    transition:opacity .12s ease; min-width:228px;
+    display:flex; flex-direction:column; height:100%;
+  }
+  .sidebar-toggle{
+    position:absolute; top:20px; right:-13px; z-index:5;
+    width:26px; height:26px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:13px; color:var(--muted);
+    box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .sidebar-toggle:hover{background:#f1f2f4; color:var(--text);}
+  .sidebar-left.collapsed .sidebar-toggle{right:-13px;}
+  .rail-toggle{
+    display:none; position:fixed; top:20px; left:12px; z-index:6;
+    width:32px; height:32px; border-radius:8px;
+    background:var(--panel); border:1px solid var(--border);
+    align-items:center; justify-content:center; cursor:pointer; color:var(--text);
+  }
+  .rail-toggle.show{display:flex;}
   .brand{display:flex; gap:10px; align-items:flex-start; margin-bottom:20px;}
   .brand-icon{width:22px;height:22px;background:#111;border-radius:5px;flex:0 0 22px;margin-top:2px;}
   .brand-title{font-weight:700; font-size:15px; line-height:1.25;}
@@ -101,8 +129,9 @@
   }
   .card .vn-text{font-size:1em; line-height:1.6; margin:0;}
   .card textarea{
-    width:100%; min-height:100px; border:none; resize:vertical; font-family:inherit;
+    width:100%; min-height:100px; border:none; resize:none; font-family:inherit;
     font-size:1em; line-height:1.6; background:transparent; color:var(--text); outline:none;
+    overflow:hidden;
   }
   .card textarea::placeholder{color:#a3a7ad;}
 
@@ -155,31 +184,35 @@
 <div class="app">
 
   <!-- LEFT SIDEBAR -->
-  <aside class="sidebar-left">
-    <div class="brand">
-      <div class="brand-icon"></div>
-      <div>
-        <div class="brand-title">Vietnamese-English<br>Translation II</div>
-        <div class="brand-sub">
-          Unit 2: Diplomatic Note<br>
-          Instructor: Duc Minh Pham (M.A.)
+  <aside class="sidebar-left" id="sidebarLeft">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Collapse sidebar">‹</button>
+    <div class="sidebar-inner">
+      <div class="brand">
+        <div class="brand-icon"></div>
+        <div>
+          <div class="brand-title">Vietnamese-English<br>Translation II</div>
+          <div class="brand-sub">
+            Unit 2: Diplomatic Note<br>
+            Instructor: Duc Minh Pham (M.A.)
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="nav-heading">SECTIONS</div>
-    <ul class="nav-list" id="navList">
-      <li class="nav-item" data-name="I. Grammatical Notes">I. Grammatical Notes</li>
-      <li class="nav-item active" data-name="II. Note Translation">II. Note Translation <span class="dot"></span></li>
-      <li class="nav-item" data-name="V–VI. Consolidation">V–VI. Consolidation</li>
-      <li class="nav-item" data-name="VII. Homework">VII. Homework</li>
-      <li class="nav-item" data-name="Custom Text">Custom Text</li>
-    </ul>
+      <div class="nav-heading">SECTIONS</div>
+      <ul class="nav-list" id="navList">
+        <li class="nav-item" data-name="I. Grammatical Notes">I. Grammatical Notes</li>
+        <li class="nav-item active" data-name="II. Note Translation">II. Note Translation <span class="dot"></span></li>
+        <li class="nav-item" data-name="V–VI. Consolidation">V–VI. Consolidation</li>
+        <li class="nav-item" data-name="VII. Homework">VII. Homework</li>
+        <li class="nav-item" data-name="Custom Text">Custom Text</li>
+      </ul>
 
-    <div class="sidebar-left-footer">
-      Vietnamese–English Translation II · Diplomatic Academy of Vietnam
+      <div class="sidebar-left-footer">
+        Vietnamese–English Translation II · Diplomatic Academy of Vietnam
+      </div>
     </div>
   </aside>
+  <button class="rail-toggle" id="railToggle" title="Expand sidebar">›</button>
 
   <!-- MAIN -->
   <div class="main">
@@ -296,6 +329,20 @@ Number: 723/BNG-LS</textarea>
 (function(){
   const root = document.documentElement;
   const fontLabel = document.getElementById('fontSizeLabel');
+
+  // Auto-grow textareas to fit their content
+  function autoGrow(ta){
+    ta.style.height = 'auto';
+    ta.style.height = (ta.scrollHeight + 2) + 'px';
+  }
+  function initAutoGrow(ta){
+    autoGrow(ta);
+    ta.addEventListener('input', ()=>autoGrow(ta));
+  }
+  document.querySelectorAll('.card textarea, #myNotes').forEach(initAutoGrow);
+  window.addEventListener('resize', ()=>{
+    document.querySelectorAll('.card textarea, #myNotes').forEach(autoGrow);
+  });
   let fontSize = parseInt(localStorage.getItem('fontSize') || '17', 10);
 
   function applyFontSize(){
@@ -314,6 +361,20 @@ Number: 723/BNG-LS</textarea>
   document.getElementById('fontReset').addEventListener('click', ()=>{
     fontSize = 17; applyFontSize();
   });
+
+  // Collapsible left sidebar
+  const sidebarLeft = document.getElementById('sidebarLeft');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const railToggle = document.getElementById('railToggle');
+
+  function setSidebarCollapsed(collapsed){
+    sidebarLeft.classList.toggle('collapsed', collapsed);
+    railToggle.classList.toggle('show', collapsed);
+    localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+  }
+  setSidebarCollapsed(localStorage.getItem('sidebarCollapsed') === '1');
+  sidebarToggle.addEventListener('click', ()=> setSidebarCollapsed(true));
+  railToggle.addEventListener('click', ()=> setSidebarCollapsed(false));
 
   // Nav item switching (visual only)
   document.getElementById('navList').addEventListener('click', (e)=>{
