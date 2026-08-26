@@ -157,14 +157,14 @@
   .save-status{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted);}
   .save-dot{width:7px;height:7px;border-radius:50%; background:var(--green);}
 
-  .name-row{
-    display:flex; align-items:center; gap:12px; padding:14px 24px;
-    background:var(--panel); border-bottom:1px solid var(--border);
+  .learner-field{margin-bottom:22px;}
+  .learner-field label{
+    display:block; font-size:11px; letter-spacing:.06em; font-weight:600;
+    color:var(--muted); margin-bottom:6px; text-transform:uppercase;
   }
-  .name-row label{font-size:13.5px; font-weight:600; color:var(--text);}
-  .name-row input{
-    border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:14px;
-    width:280px; max-width:60vw; background:var(--bg);
+  .learner-field input{
+    width:100%; border:1px solid var(--border); border-radius:8px;
+    padding:8px 10px; font-size:13.5px; background:var(--bg); color:var(--text);
   }
 
   .content-row{flex:1; display:flex; min-height:0;}
@@ -252,6 +252,11 @@
         </div>
       </div>
 
+      <div class="learner-field">
+        <label for="learnerName">Learner's name</label>
+        <input type="text" id="learnerName" placeholder="Enter your full name">
+      </div>
+
       <div class="nav-heading">SECTIONS</div>
       <ul class="nav-list" id="navList">
         <li class="nav-item" data-name="I. Grammatical Notes">I. Grammatical Notes</li>
@@ -287,11 +292,6 @@
         <button class="btn btn-dark" id="printFullSet">Print Full Set</button>
         <div class="save-status"><span class="save-dot"></span><span id="saveLabel">Saved</span></div>
       </div>
-    </div>
-
-    <div class="name-row">
-      <label for="learnerName">Learner's name</label>
-      <input type="text" id="learnerName" placeholder="Enter your full name">
     </div>
 
     <div class="content-row">
