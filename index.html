@@ -1,12 +1,393 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vietnamese-English Translation II</title>
+<style>
+  :root{
+    --font-size: 17px;
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --border: #e3e5e9;
+    --text: #1f2328;
+    --muted: #6b7280;
+    --accent: #d92d20;
+    --green: #16a34a;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: var(--font-size);
+  }
+  .app{display:flex; height:100vh; overflow:hidden;}
+
+  /* LEFT SIDEBAR */
+  .sidebar-left{
+    width:260px; flex:0 0 260px;
+    background:var(--panel);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+    padding:20px 16px;
+  }
+  .brand{display:flex; gap:10px; align-items:flex-start; margin-bottom:20px;}
+  .brand-icon{width:22px;height:22px;background:#111;border-radius:5px;flex:0 0 22px;margin-top:2px;}
+  .brand-title{font-weight:700; font-size:15px; line-height:1.25;}
+  .brand-sub{font-size:12.5px; color:var(--muted); margin-top:8px; line-height:1.5;}
+  .nav-heading{font-size:11px; letter-spacing:.06em; color:var(--muted); font-weight:600; margin:22px 0 8px;}
+  .nav-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px;}
+  .nav-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 10px; border-radius:8px; cursor:pointer;
+    font-size:14px; color:var(--text);
+  }
+  .nav-item:hover{background:#f1f2f4;}
+  .nav-item.active{background:#eef0f3; font-weight:600;}
+  .dot{width:7px;height:7px;border-radius:50%; background:var(--accent);}
+  .sidebar-left-footer{margin-top:auto; padding-top:16px; font-size:12px; color:var(--muted); border-top:1px solid var(--border); line-height:1.5;}
+
+  /* MAIN */
+  .main{flex:1; display:flex; flex-direction:column; min-width:0;}
+  .topbar{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:18px 24px; border-bottom:1px solid var(--border); background:var(--panel);
+    flex-wrap:wrap; gap:12px;
+  }
+  .topbar h1{font-size:22px; margin:0 0 4px;}
+  .topbar .source{font-size:13px; color:var(--muted);}
+  .controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .font-controls{display:flex; align-items:center; gap:6px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:4px 8px;}
+  .font-controls button{
+    border:none; background:transparent; cursor:pointer; font-size:13px; padding:4px 6px; border-radius:6px; color:var(--text);
+  }
+  .font-controls button:hover{background:#e7e8eb;}
+  .font-size-label{font-size:12.5px; color:var(--muted); min-width:34px; text-align:center;}
+  .btn{
+    border:1px solid var(--border); background:var(--panel); color:var(--text);
+    padding:8px 14px; border-radius:8px; font-size:13.5px; cursor:pointer;
+  }
+  .btn:hover{background:#f1f2f4;}
+  .btn-dark{background:#111; color:#fff; border-color:#111;}
+  .btn-dark:hover{background:#000;}
+  .save-status{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted);}
+  .save-dot{width:7px;height:7px;border-radius:50%; background:var(--green);}
+
+  .name-row{
+    display:flex; align-items:center; gap:12px; padding:14px 24px;
+    background:var(--panel); border-bottom:1px solid var(--border);
+  }
+  .name-row label{font-size:13.5px; font-weight:600; color:var(--text);}
+  .name-row input{
+    border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:14px;
+    width:280px; max-width:60vw; background:var(--bg);
+  }
+
+  .content-row{flex:1; display:flex; min-height:0;}
+  .cards-area{flex:1; overflow-y:auto; padding:20px 24px;}
+  .pair{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px;
+  }
+  .card-label{
+    display:flex; align-items:center; gap:8px; font-size:11.5px; letter-spacing:.04em;
+    color:var(--muted); font-weight:700; margin-bottom:10px; text-transform:uppercase;
+  }
+  .badge{
+    width:18px;height:18px; border-radius:50%; background:var(--bg); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text); font-weight:700;
+  }
+  .card .vn-text{font-size:1em; line-height:1.6; margin:0;}
+  .card textarea{
+    width:100%; min-height:100px; border:none; resize:vertical; font-family:inherit;
+    font-size:1em; line-height:1.6; background:transparent; color:var(--text); outline:none;
+  }
+  .card textarea::placeholder{color:#a3a7ad;}
+
+  /* RIGHT SIDEBAR */
+  .sidebar-right{
+    width:340px; flex:0 0 340px; border-left:1px solid var(--border);
+    background:var(--panel); overflow-y:auto; padding:20px; position:relative;
+  }
+  .sidebar-right h2{font-size:16px; margin:0 0 16px;}
+  .section-heading{font-size:11px; letter-spacing:.06em; color:var(--muted); font-weight:700; margin:18px 0 8px;}
+  table.vocab{width:100%; border-collapse:collapse; font-size:13.5px;}
+  table.vocab thead th{
+    text-align:left; font-size:10.5px; color:var(--muted); font-weight:700; letter-spacing:.05em;
+    padding-bottom:6px; border-bottom:1px solid var(--border);
+  }
+  table.vocab td{padding:8px 4px; border-bottom:1px solid #f0f1f3; vertical-align:top;}
+  table.vocab td.vn{font-weight:600; width:42%;}
+  table.vocab td.en{color:var(--muted);}
+  table.vocab td.rm{width:20px; text-align:right;}
+  table.vocab td.rm button{
+    border:none; background:transparent; color:var(--muted); cursor:pointer; font-size:14px; line-height:1;
+  }
+  table.vocab td.rm button:hover{color:var(--accent);}
+  .add-vocab{
+    display:block; width:100%; text-align:center; margin-top:10px; padding:8px;
+    border:1px dashed var(--border); border-radius:8px; background:transparent;
+    color:var(--muted); font-size:13px; cursor:pointer;
+  }
+  .add-vocab:hover{background:var(--bg); color:var(--text);}
+  #myNotes{
+    width:100%; min-height:140px; border:1px solid var(--border); border-radius:8px;
+    padding:10px; font-family:inherit; font-size:13.5px; resize:vertical; background:var(--bg); color:var(--text);
+  }
+  .netlify-badge{
+    position:sticky; bottom:0; margin-top:20px; display:inline-flex; align-items:center; gap:6px;
+    background:#111; color:#fff; padding:8px 12px; border-radius:20px; font-size:12px; float:right;
+  }
+  .netlify-badge .dot2{width:6px;height:6px;border-radius:50%; background:#7ee787;}
+
+  @media print{
+    .sidebar-left, .sidebar-right, .controls, .name-row input{ }
+    body.print-notes-only .sidebar-left,
+    body.print-notes-only .sidebar-right,
+    body.print-notes-only .topbar .controls{display:none !important;}
+    .card textarea{border:none;}
+  }
+</style>
 </head>
 <body>
-    <h1>cam on vi da den, Phuc you hehe</h1>
-    <p>cai web nay nhu cut toi biet ma</p>
+<div class="app">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="brand">
+      <div class="brand-icon"></div>
+      <div>
+        <div class="brand-title">Vietnamese-English<br>Translation II</div>
+        <div class="brand-sub">
+          Unit 2: Diplomatic Note<br>
+          Instructor: Duc Minh Pham (M.A.)
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-heading">SECTIONS</div>
+    <ul class="nav-list" id="navList">
+      <li class="nav-item" data-name="I. Grammatical Notes">I. Grammatical Notes</li>
+      <li class="nav-item active" data-name="II. Note Translation">II. Note Translation <span class="dot"></span></li>
+      <li class="nav-item" data-name="V–VI. Consolidation">V–VI. Consolidation</li>
+      <li class="nav-item" data-name="VII. Homework">VII. Homework</li>
+      <li class="nav-item" data-name="Custom Text">Custom Text</li>
+    </ul>
+
+    <div class="sidebar-left-footer">
+      Vietnamese–English Translation II · Diplomatic Academy of Vietnam
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Note on the Amendment of the Visa Exemption Agreement</h1>
+        <div class="source">Source: luatvietnam.vn - Việt Nam – Myanmar diplomatic note, No. 723/BNG-LS</div>
+      </div>
+      <div class="controls">
+        <div class="font-controls">
+          <button id="fontMinus" title="Decrease font size">A−</button>
+          <span class="font-size-label" id="fontSizeLabel">17px</span>
+          <button id="fontPlus" title="Increase font size">A+</button>
+          <button id="fontReset" title="Reset font size">↺</button>
+        </div>
+        <button class="btn" id="printNotesOnly">Print Notes Only</button>
+        <button class="btn btn-dark" id="printFullSet">Print Full Set</button>
+        <div class="save-status"><span class="save-dot"></span><span id="saveLabel">Saved</span></div>
+      </div>
+    </div>
+
+    <div class="name-row">
+      <label for="learnerName">Learner's name</label>
+      <input type="text" id="learnerName" placeholder="Enter your full name">
+    </div>
+
+    <div class="content-row">
+      <div class="cards-area" id="cardsArea">
+
+        <div class="pair">
+          <div class="card">
+            <div class="card-label"><span class="badge">L</span> Vietnamese Letterhead</div>
+            <p class="vn-text">BỘ NGOẠI GIAO<br>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br>Số: 723/BNG-LS</p>
+          </div>
+          <div class="card">
+            <div class="card-label"><span class="badge">L</span> Your Letterhead Translation</div>
+            <textarea data-key="t-letterhead" placeholder="Type your English translation here...">Ministry of Foreign Affairs
+Socialist Republic of Vietnam
+Number: 723/BNG-LS</textarea>
+          </div>
+        </div>
+
+        <div class="pair">
+          <div class="card">
+            <div class="card-label"><span class="badge">1</span> Vietnamese</div>
+            <p class="vn-text">Bộ Ngoại giao nước Cộng hòa xã hội chủ nghĩa Việt Nam kính chào Bộ Ngoại giao nước Cộng hòa Liên bang Mi-an-ma và liên quan đến việc sửa đổi Hiệp định miễn thị thực cho người mang hộ chiếu phổ thông hai nước, hân hạnh trao đổi như sau:</p>
+          </div>
+          <div class="card">
+            <div class="card-label"><span class="badge">2</span> Your Translation</div>
+            <textarea data-key="t-1" placeholder="Type your English translation here..."></textarea>
+          </div>
+        </div>
+
+        <div class="pair">
+          <div class="card">
+            <div class="card-label"><span class="badge">2</span> Vietnamese</div>
+            <p class="vn-text">Năm 2013, Việt Nam và Mi-an-ma đã ký Hiệp định giữa Chính phủ nước Cộng hòa xã hội chủ nghĩa Việt Nam và Chính phủ nước Cộng hòa Liên bang Mi-an-ma về miễn thị thực cho người mang hộ chiếu phổ thông (Hiệp định), có hiệu lực từ ngày 26/10/2013.</p>
+          </div>
+          <div class="card">
+            <div class="card-label"><span class="badge">2</span> Your Translation</div>
+            <textarea data-key="t-2" placeholder="Type your English translation here..."></textarea>
+          </div>
+        </div>
+
+        <div class="pair">
+          <div class="card">
+            <div class="card-label"><span class="badge">3</span> Vietnamese</div>
+            <p class="vn-text">Với mong muốn tạo thuận lợi hơn nữa và thúc đẩy hợp tác song phương, giao lưu hữu nghị giữa công dân hai nước, Chính phủ nước Cộng hòa xã hội chủ nghĩa Việt Nam trân trọng đề xuất việc kéo dài thời hạn lưu trú miễn thị thực cho người mang hộ chiếu phổ thông hai nước từ 14 ngày lên thành 30 ngày, trừ trường hợp nhập cảnh với mục đích lao động hoặc các hoạt động thương mại khác bằng cách sửa đổi Điều 2 Hiệp định như sau:</p>
+          </div>
+          <div class="card">
+            <div class="card-label"><span class="badge">3</span> Your Translation</div>
+            <textarea data-key="t-3" placeholder="Type your English translation here..."></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="sidebar-right">
+        <h2>Vocabulary &amp; Notes</h2>
+
+        <div class="section-heading">KEY VOCABULARY</div>
+        <table class="vocab">
+          <thead>
+            <tr><th>VIETNAMESE</th><th>ENGLISH</th><th></th></tr>
+          </thead>
+          <tbody id="vocabBody">
+            <tr><td class="vn">Kính chào</td><td class="en">present its compliments</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Hiệp định miễn thị thực</td><td class="en">Agreement on Visa Exemption</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Hộ chiếu phổ thông</td><td class="en">ordinary passport</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Hân hạnh</td><td class="en">have the honor to</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Có hiệu lực</td><td class="en">come into effect</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Thời hạn lưu trú</td><td class="en">duration of stay</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Nhập cảnh</td><td class="en">entry</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Xuất cảnh</td><td class="en">exit</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Quá cảnh</td><td class="en">transit</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Tạm trú</td><td class="en">temporary stay</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Cơ quan có thẩm quyền</td><td class="en">competent office</td><td class="rm"><button>×</button></td></tr>
+            <tr><td class="vn">Gửi đến lời chào trân trọng</td><td class="en">avails itself of this opportunity</td><td class="rm"><button>×</button></td></tr>
+          </tbody>
+        </table>
+        <button class="add-vocab" id="addVocab">+ Add Vocabulary</button>
+
+        <div class="section-heading">MY NOTES</div>
+        <textarea id="myNotes" placeholder="Write your own notes, questions, or observations here..."></textarea>
+
+        <div class="netlify-badge"><span class="dot2"></span> Powered by Netlify</div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const fontLabel = document.getElementById('fontSizeLabel');
+  let fontSize = parseInt(localStorage.getItem('fontSize') || '17', 10);
+
+  function applyFontSize(){
+    document.body.style.fontSize = fontSize + 'px';
+    fontLabel.textContent = fontSize + 'px';
+    localStorage.setItem('fontSize', fontSize);
+  }
+  applyFontSize();
+
+  document.getElementById('fontMinus').addEventListener('click', ()=>{
+    fontSize = Math.max(12, fontSize - 1); applyFontSize();
+  });
+  document.getElementById('fontPlus').addEventListener('click', ()=>{
+    fontSize = Math.min(24, fontSize + 1); applyFontSize();
+  });
+  document.getElementById('fontReset').addEventListener('click', ()=>{
+    fontSize = 17; applyFontSize();
+  });
+
+  // Nav item switching (visual only)
+  document.getElementById('navList').addEventListener('click', (e)=>{
+    const item = e.target.closest('.nav-item');
+    if(!item) return;
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+  });
+
+  // Learner name persistence
+  const nameInput = document.getElementById('learnerName');
+  nameInput.value = localStorage.getItem('learnerName') || '';
+  nameInput.addEventListener('input', ()=>{
+    localStorage.setItem('learnerName', nameInput.value);
+    flashSaved();
+  });
+
+  // Translation textareas persistence
+  document.querySelectorAll('textarea[data-key]').forEach(ta=>{
+    const key = 'ta-' + ta.dataset.key;
+    const saved = localStorage.getItem(key);
+    if(saved !== null) ta.value = saved;
+    ta.addEventListener('input', ()=>{
+      localStorage.setItem(key, ta.value);
+      flashSaved();
+    });
+  });
+
+  // My notes persistence
+  const myNotes = document.getElementById('myNotes');
+  myNotes.value = localStorage.getItem('myNotes') || '';
+  myNotes.addEventListener('input', ()=>{
+    localStorage.setItem('myNotes', myNotes.value);
+    flashSaved();
+  });
+
+  const saveLabel = document.getElementById('saveLabel');
+  let saveTimeout;
+  function flashSaved(){
+    saveLabel.textContent = 'Saving…';
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(()=>{ saveLabel.textContent = 'Saved'; }, 500);
+  }
+
+  // Add vocabulary
+  document.getElementById('addVocab').addEventListener('click', ()=>{
+    const vn = prompt('Vietnamese term:');
+    if(!vn) return;
+    const en = prompt('English meaning:') || '';
+    const tbody = document.getElementById('vocabBody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td class="vn"></td><td class="en"></td><td class="rm"><button>×</button></td>';
+    tr.querySelector('.vn').textContent = vn;
+    tr.querySelector('.en').textContent = en;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('vocabBody').addEventListener('click', (e)=>{
+    if(e.target.tagName === 'BUTTON'){
+      e.target.closest('tr').remove();
+    }
+  });
+
+  // Print
+  document.getElementById('printNotesOnly').addEventListener('click', ()=>{
+    document.body.classList.add('print-notes-only');
+    window.print();
+    document.body.classList.remove('print-notes-only');
+  });
+  document.getElementById('printFullSet').addEventListener('click', ()=>{
+    document.body.classList.remove('print-notes-only');
+    window.print();
+  });
+})();
+</script>
 </body>
 </html>
