@@ -61,6 +61,16 @@
     align-items:center; justify-content:center; cursor:pointer; color:var(--text);
   }
   .rail-toggle.show{display:flex;}
+  .resizer{
+    flex:0 0 5px; width:5px; cursor:col-resize; position:relative; z-index:4;
+    background:transparent;
+  }
+  .resizer::after{
+    content:''; position:absolute; top:0; bottom:0; left:2px; width:1px;
+  }
+  .resizer:hover, .resizer.dragging{background:rgba(37,99,235,.18);}
+  body.resizing{cursor:col-resize; user-select:none;}
+  body.resizing *{user-select:none;}
   .brand{display:flex; gap:10px; align-items:flex-start; margin-bottom:20px;}
   .brand-icon{width:22px;height:22px;background:#111;border-radius:5px;flex:0 0 22px;margin-top:2px;}
   .brand-title{font-weight:700; font-size:15px; line-height:1.25;}
@@ -212,6 +222,7 @@
       </div>
     </div>
   </aside>
+  <div class="resizer" id="resizerLeft" title="Drag to resize"></div>
   <button class="rail-toggle" id="railToggle" title="Expand sidebar">›</button>
 
   <!-- MAIN -->
@@ -290,8 +301,10 @@ Number: 723/BNG-LS</textarea>
 
       </div>
 
+      <div class="resizer" id="resizerRight" title="Drag to resize"></div>
+
       <!-- RIGHT SIDEBAR -->
-      <aside class="sidebar-right">
+      <aside class="sidebar-right" id="sidebarRight">
         <h2>Vocabulary &amp; Notes</h2>
 
         <div class="section-heading">KEY VOCABULARY</div>
@@ -375,6 +388,53 @@ Number: 723/BNG-LS</textarea>
   setSidebarCollapsed(localStorage.getItem('sidebarCollapsed') === '1');
   sidebarToggle.addEventListener('click', ()=> setSidebarCollapsed(true));
   railToggle.addEventListener('click', ()=> setSidebarCollapsed(false));
+
+  // Drag-to-resize sidebars
+  function makeResizable(handle, panel, opts){
+    const { min, max, storageKey, invert } = opts;
+    const saved = localStorage.getItem(storageKey);
+    if(saved) setWidth(parseInt(saved, 10));
+
+    function setWidth(px){
+      px = Math.max(min, Math.min(max, px));
+      panel.style.width = px + 'px';
+      panel.style.flexBasis = px + 'px';
+      return px;
+    }
+
+    handle.addEventListener('mousedown', (e)=>{
+      e.preventDefault();
+      if(panel.classList.contains('collapsed')) return;
+      const startX = e.clientX;
+      const startWidth = panel.getBoundingClientRect().width;
+      panel.style.transition = 'none';
+      handle.classList.add('dragging');
+      document.body.classList.add('resizing');
+
+      function onMove(ev){
+        const delta = invert ? (startX - ev.clientX) : (ev.clientX - startX);
+        const applied = setWidth(startWidth + delta);
+        localStorage.setItem(storageKey, applied);
+      }
+      function onUp(){
+        panel.style.transition = '';
+        handle.classList.remove('dragging');
+        document.body.classList.remove('resizing');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.querySelectorAll('.card textarea, #myNotes').forEach(autoGrow);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  makeResizable(document.getElementById('resizerLeft'), sidebarLeft, {
+    min: 180, max: 460, storageKey: 'sidebarLeftWidth', invert: false
+  });
+  makeResizable(document.getElementById('resizerRight'), document.getElementById('sidebarRight'), {
+    min: 240, max: 640, storageKey: 'sidebarRightWidth', invert: true
+  });
 
   // Nav item switching (visual only)
   document.getElementById('navList').addEventListener('click', (e)=>{
